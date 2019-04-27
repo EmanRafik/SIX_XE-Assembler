@@ -1,5 +1,10 @@
 #include "FormatChecker.h"
 #include<regex>
+#include<vector>
+#include <iostream>
+#include <algorithm>
+#include <string>
+
 
 using namespace std;
 using namespace std::regex_constants;
@@ -14,7 +19,7 @@ FormatChecker::~FormatChecker()
     //dtor
 }
 
-bool FormatChecker::formatTwo(string operand)
+bool FormatChecker::formatTwo(std::string operand)
 {
     std::smatch m;
     std::regex e("(A|X|B|T|S|L),(A|X|B|T|S|L)", ECMAScript | icase);
@@ -24,11 +29,14 @@ bool FormatChecker::formatTwo(string operand)
     }
     return false;
 }
-bool FormatChecker::formatThree(string operand)
+bool FormatChecker::formatThree(std::string operand)
 {
+    if (operand == "*")
+    {
+        return true;
+    }
     std::smatch m;
-    /**check**/
-    std::regex e("(C'[a-zA-Z]')|X'[A-F0-9]'", ECMAScript | icase);
+    std::regex e("((=)?(C'(\\w|\\W)+')|(X'[A-F0-9]'))|((=)?W'(-)\\d+')", ECMAScript | icase);
     if (std::regex_search(operand,m,e))
     {
         int x = m.length();
@@ -38,7 +46,6 @@ bool FormatChecker::formatThree(string operand)
             return true;
         }
     }
-    /**check immediate**/
     std::smatch m1;
     std::regex e1("((#)?(-)?[0-9]+)|((@)?[0-9A-F]+)|([0-9A-F]+(,X)?)", ECMAScript | icase);
     if (std::regex_search(operand,m1,e1))
@@ -55,7 +62,8 @@ bool FormatChecker::formatThree(string operand)
                 return true;
             if (operand.at(0) == '#' || operand.at(0) == '@')
             {
-                if (operand.at(1) >= '0' && operand.at(1) <= '9'){
+                if (operand.at(1) >= '0' && operand.at(1) <= '9')
+                {
                     return false;
                 }
             }
@@ -76,7 +84,8 @@ bool FormatChecker::formatThree(string operand)
         {
             if (operand.at(0) == '#' || operand.at(0) == '@')
             {
-                if (!(operand.at(1) >= 'a' && operand.at(1) <= 'z') && !(operand.at(1) >= 'A' && operand.at(1) <= 'Z')) {
+                if (!(operand.at(1) >= 'a' && operand.at(1) <= 'z') && !(operand.at(1) >= 'A' && operand.at(1) <= 'Z'))
+                {
                     return false;
                 }
             }
@@ -90,16 +99,182 @@ bool FormatChecker::formatThree(string operand)
     return false;
 }
 
-bool validLabel(string label) {
+bool FormatChecker::validLabel(std::string label)
+{
     std::smatch m;
     std::regex e("(([a-z]|[A-Z])\\w+", ECMAScript | icase);
     if (std::regex_search(label,m,e))
     {
         int x = m.length();
         int y = label.length();
-        if (x==y) {
+        if (x==y)
+        {
             return true;
         }
+    }
+    return false;
+}
+
+vector<string> FormatChecker::expression(std::string operand)
+{
+    vector<string> out;
+    if (isExpression(operand))
+    {
+        bool con = true;
+        while(con)
+        {
+            string n3;
+            std::smatch m;
+            std::regex all("[/+-]|\\(|\\)", ECMAScript | icase);
+            if (std::regex_search(operand,m,all))
+            {
+                out.push_back(m.prefix().str());
+                // cout << m.prefix().str();
+                //cout << "\n";
+                out.push_back(m.str());
+                //cout << m.str();
+                // cout << "\n";
+                n3 = m.suffix().str();
+            }
+            if(n3.find('+') != std::string::npos
+                    || n3.find('-')!= std::string::npos
+                    || n3.find('*')!= std::string::npos
+                    || n3.find('/')!= std::string::npos
+                    || n3.find('(')!= std::string::npos
+                    || n3.find(')')!= std::string::npos)
+            {
+                operand = n3;
+            }
+            else
+            {
+                //cout << n3;
+                out.push_back(n3);
+                con = false;
+            }
+        }
+        //cout << "enter";
+    }
+    return out;
+
+//nfok el expression
+}
+
+bool FormatChecker::isExpression(std::string operand)
+{
+    cout << operand;
+    std::smatch m;
+    std::regex add("[+]", ECMAScript | icase);
+    std::regex sub("[-]", ECMAScript | icase);
+    std::regex div("[/]", ECMAScript | icase);
+    std::regex all("[/+-]", ECMAScript | icase);
+
+    if (operand.at(0)=='+' ||
+            operand.at(0)=='-' ||
+            operand.at(0)=='/')
+    {
+        //cout << "false1";
+        return false;
+    }
+    if (operand.at(0)=='*' && operand.length() == 1)
+    {
+        // cout << "false2";
+        return false;
+    }
+    else if (operand.at(0)=='*' && operand.at(1) != '(')
+    {
+        //cout << "false22";
+        return false;
+    }
+    if (std::regex_search(operand,m,add))
+    {
+        string before = m.suffix().str();
+        string after = m.prefix().str();
+        if(before.empty() || after.empty())
+        {
+            //cout << "false3";
+            return false;
+        }
+    }
+    if (std::regex_search(operand,m,sub))
+    {
+        string before = m.suffix().str();
+        string after = m.prefix().str();
+        if(before.empty() || after.empty())
+        {
+            //cout << "false4";
+            return false;
+        }
+    }
+    if (std::regex_search(operand,m,div))
+    {
+        string before = m.suffix().str();
+        string after = m.prefix().str();
+        if(before.empty() || after.empty())
+        {
+            //cout << "false5";
+            return false;
+        }
+    }
+    if (std::regex_search(operand,m,all))
+    {
+        string before = m.suffix().str();
+        string after = m.prefix().str();
+        if(!before.empty() && !after.empty())
+        {
+            //cout << "true";
+            return true;
+        }
+    }
+    else
+    {
+        //cout << "falseend";
+        return false;
+    }
+
+}
+
+bool FormatChecker::noLabelCode(string opCode)
+{
+    std::transform(opCode.begin(), opCode.end(), opCode.begin(), ::toupper);
+    if (opCode == "BASE" || opCode == "NOBASE" || opCode =="ORG" || opCode == "LTORG")
+    {
+        return true;
+    }
+    return false;
+}
+
+bool FormatChecker::storageDirectives(string opCode, string operand)
+{
+    std::transform(opCode.begin(), opCode.end(), opCode.begin(), ::toupper);
+    if (opCode == "RESW" || opCode == "RESB" || opCode == "WORD")
+    {
+        std::smatch m;
+        std::regex e("\\d+", ECMAScript | icase);
+        if (std::regex_search(operand,m,e))
+        {
+            int x = m.length();
+            int y = operand.length();
+            if (x==y)
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+    else if (opCode == "BYTE")
+    {
+        std::smatch m;
+        std::regex e("((C'(\\w|\\W)+')|(X'[A-F0-9]+'))", ECMAScript | icase);
+        if (std::regex_search(operand,m,e))
+        {
+            int x = m.length();
+            int y = operand.length();
+            if (x==y)
+            {
+                return true;
+            }
+        }
+        return false;
     }
     return false;
 }

@@ -17,6 +17,7 @@ class Line
         void setErrorMessage(string errorMessage);
         void setInput(string input);
         void setCommentLine(bool commentLine);
+        void setErrorFound(bool errorFound);
         string getLabel();
         string getOpCode();
         string getOperand();
@@ -24,10 +25,11 @@ class Line
         string getLocationCounter();
         string getErrorMessage();
         string getInput();
-        void write();
         bool errorFound();
         bool symbolicOperand();
         bool isComment();
+        void executer();
+        void write();
 
     protected:
 
@@ -35,6 +37,12 @@ class Line
         string label, opCode, operand, comment, locationCounter;
         string errorMessage,input;
         bool commentLine, error, symbol;
+        void addToSymbolTable();
+        void addToLiteralTable();
+        void updateLocationCounter();
+        void handleSpecialCases();
+        void checker();
+
 };
 
 #endif // LINE_H

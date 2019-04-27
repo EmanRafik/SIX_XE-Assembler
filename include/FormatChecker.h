@@ -9,16 +9,20 @@ using namespace std::regex_constants;
 
 class FormatChecker
 {
-    public:
-        FormatChecker();
-        virtual ~FormatChecker();
-        bool formatTwo(string operand);
-        bool formatThree(string operand);
-        bool validLabel(string label);
+public:
+    FormatChecker();
+    virtual ~FormatChecker();
+    bool formatTwo(std::string operand);
+    bool formatThree(std::string operand);
+    bool validLabel(std::string label);
+    vector<string> expression(string operand);
+    bool isExpression(string operand);
+    bool noLabelCode(string opCode);
+    bool storageDirectives(string opCode, string operand);
 
-    protected:
+protected:
 
-    private:
+private:
 };
 
 #endif // FORMATCHECKER_H

@@ -1,12 +1,20 @@
 #include "Output.h"
 #include<fstream>
+#include<iostream>
+#include<map>
 
 Output::Output()
 {
     //ctor
-    this ->prevAddress = "";
-    this -> outline = "";
-    this -> expsize = 0;
+    this->prevAddress = "";
+	this->outline = "Address     label    OPCode  Operand             Comment";
+//	this->writeLine(outline);
+	ofstream myfile;
+    myfile.open ("Output.txt");
+    myfile << outline;
+    myfile << "\n";
+    myfile.close();
+	this->expsize = 0;
 }
 
 Output::~Output()
@@ -41,32 +49,28 @@ void Output::makeLine(Line l)
     }
     else
     {
-        this ->prevAddress = address;
-        expsize = 7;
-        outline = outline + address;
-        while (outline.size() < expsize)
-        {
-            outline = outline + " ";
-        }
-        expsize = 7+9;
-        outline = outline + label;
-        while (outline.size() < expsize)
-        {
-            outline = outline + " ";
-        }
-        expsize = 7+17;
-        outline = outline + opCode;
-        while (outline.size() < expsize)
-        {
-            outline = outline +" ";
-        }
-        expsize = 7+35;
-        outline = outline + operand;
-        while (outline.size() < expsize)
-        {
-            outline = outline + " ";
-        }
-        outline = outline + comment;
+       	this->prevAddress = address;
+		expsize = 7 + 5;
+		outline = outline + address;
+		while (outline.size() < expsize) {
+			outline = outline + " ";
+		}
+		expsize = 7 + 5 + 9;
+		outline = outline + label;
+		while (outline.size() < expsize) {
+			outline = outline + " ";
+		}
+		expsize = 7 + 5 + 17;
+		outline = outline + opCode;
+		while (outline.size() < expsize) {
+			outline = outline + " ";
+		}
+		expsize = 7 + 5 + 35;
+		outline = outline + operand;
+		while (outline.size() < expsize) {
+			outline = outline + " ";
+		}
+		outline = outline + comment;
     }
     writeLine(outline);
     /*if (Warning is true)
@@ -75,10 +79,42 @@ void Output::makeLine(Line l)
     }
     */
 }
+
+void Output::printSymbolt(std::map<string, string*> table) {
+	ofstream myfile;
+	myfile.open("Output.txt", ios::app);
+	myfile << "******************************************************** \n";
+	std::string line = "Symbol    Location    type    ";
+	myfile << line;
+	myfile << "\n";
+//	expsize = 10;
+	for (std::map<string, string*>::iterator it = table.begin(); it != table.end();
+			++it) {
+		line = it->first;
+		expsize = 10;
+		while (line.size() < expsize) {
+			line = line + " ";
+		}
+		line = line + it->second[0];
+		expsize = 10 + 12;
+		while (line.size() < expsize) {
+			line = line + " ";
+		}
+		line = line + it->second[1];
+		expsize = 10 + 12+ 9;
+		while (line.size() < expsize) {
+			line = line + " ";
+		}
+		std::cout << line;
+		myfile << line;
+		myfile << "\n";
+	}
+	myfile.close();
+}
 void Output::writeLine(std::string line)
 {
     ofstream myfile;
-    myfile.open ("example.txt");
+    myfile.open ("Output.txt",std::ios::app);
     myfile << line;
     myfile << "\n";
     myfile.close();

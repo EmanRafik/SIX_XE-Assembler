@@ -5,6 +5,9 @@
 #include <iostream>
 #include"Address.h"
 #include "OperationCodes.h"
+#include"Output.h"
+#include"Program.h"
+#include"SymbolTable.h"
 
 using namespace std;
 using namespace std::regex_constants;
@@ -24,133 +27,93 @@ Parser::~Parser()
     //dtor
 }
 
-void Parser::parseStart(std::string line)
+bool Parser::parseStart(std::string line)
 {
-    l.setInput(line);
-    int i = 0;
-    string word;
-    std::smatch m;
-    std::regex e("\\s+", ECMAScript | icase);
-    while(std::regex_search(line,m,e))
+    std::smatch m1;
+    std::regex e1("\\s+\\.", ECMAScript | icase);
+    if(std::regex_search(line,m1,e1))
     {
-        int x = m.position();
-        if (x != 0)
-        {
-            word = line.substr(0,x);
-            string s = word;
-            std::transform(s.begin(), s.end(), s.begin(), ::toupper);
-            switch (i)
-            {
-            case 0:
-                if (s == "START")
-                {
-                    i = 1;
-                    l.setOpCode(word);
-                }
-                else
-                {
-                    l.setLabel(word);
-                }
-                break;
-            case 1:
-                if (s != "START")
-                {
-                    l.setErrorMessage("Undefined Start Format ..");
-                    return;
-                }
-                l.setOpCode("START");
-                break;
-            case 2:
-                std::smatch m1;
-                std::regex e1("[0-9A-F]+", ECMAScript | icase);
-                if (std::regex_search(word,m1,e1))
-                {
-                    int x = m1.length();
-                    int y = word.length();
-                    if(x==y && x <= 4) {
-                        l.setOperand(word);
-                        Address address(l.getOpCode(),l.getOperand());
-                        address.startCounter();
-                        l.setLocationCounter(address.getAddress());
-                    } else {
-                        l.setComment(word);
-                        Address address(l.getOpCode(),"0000");
-                        address.startCounter();
-                        l.setLocationCounter(address.getAddress());
-                        return;
-                    }
-                } else {
-                    l.setLocationCounter("0000");
-                    l.setComment(word);
-                    Address address(l.getOpCode(),"0000");
-                    address.startCounter();
-                    l.setLocationCounter(address.getAddress());
-                    return;
-                }
-                break;
-            }
-            i++;
-        }
-        line = m.suffix().str();
+        string c = m1.suffix().str();
+        line = m1.prefix().str();
+        l.setComment(c);
     }
-    if (line.length() > 0)
+    std::smatch m;
+    std::regex e("(\\s+)?start(\\s+)?", ECMAScript | icase);
+    if(std::regex_search(line,m,e))
     {
-        l.setComment(word);
+        string x = m.prefix().str();
+        string o = m.suffix().str();
+        l.setLabel(x);
+        l.setOpCode("start");
+        std::smatch m2;
+        std::regex e2("[0-9A-F]+", ECMAScript | icase);
+        if (std::regex_search(o,m2,e2))
+        {
+            int x = m2.length();
+            int y = o.length();
+            if(x==y && x <= 4)
+            {
+                l.setOperand(o);
+            }
+        }
+        l.executer();
+        l.write();
+        return true;
+    }
+    else
+    {
+
+        return false;
     }
 }
 
 void Parser::parseEnd(std::string line)
 {
     l.setInput(line);
-    bool flag = true;
-    string word;
     std::smatch m;
-    std::regex e("\\s+", ECMAScript | icase);
-    while(std::regex_search(line,m,e))
+    std::regex e("\\w+\\s+end", ECMAScript | icase);
+    if(std::regex_search(line,m,e))
     {
-        int x = m.position();
-        if (x != 0)
+        if (m.position() == 0)
         {
-            word = line.substr(0,x);
-            string s = word;
-            std::transform(s.begin(), s.end(), s.begin(), ::tolower);
-            if (flag)
-            {
-                if (s != "end")
-                {
-                    l.setErrorMessage("Undefined End Format ..");
-                    return;
-                }
-                flag = false;
-            }
-            else
-            {
-                if (s.length() >= 4)
-                {
-                    for (unsigned int i = 0; i < s.length(); i++)
-                    {
-                        if ((s.at(i) < '0' || s.at(i) > '9')&& s.at(i) != 'A' && s.at(i) != 'B' &&s.at(i) != 'C' &&s.at(i) != 'D' &&s.at(i) != 'E' &&s.at(i) != 'F')
-                        {
-                            l.setComment(word);
-                            return;
-                        }
-                    }
-                    l.setOpCode(word);
-                    //initialize start
-                }
-                else
-                {
-                    l.setComment(word);
-                    return;
-                }
-            }
-        }
-        line = m.suffix().str();
-        if (line.length() > 0)
-        {
-            l.setComment(line);
+            l.setErrorMessage("Illegal label before END ...");
+            l.setErrorFound(true);
+            l.write();
+            return;
         }
     }
+    std::smatch m1;
+    std::regex e1("end(\\s+)?", ECMAScript | icase);
+    if(std::regex_search(line,m1,e1))
+    {
+        string oc = line.substr(m1.position(), 3);
+        l.setOpCode(oc);
+        line = m1.suffix().str();
+    }
+    int len = line.length();
+    if (len > 0)
+    {
+        if (line.at(0) == '.')
+        {
+            l.setComment(line);
+            l.executer();
+            l.write();
+            return;
+        }
+        std::smatch m2;
+        std::regex e2("\\s+\\.?", ECMAScript | icase);
+        if(std::regex_search(line,m2,e2))
+        {
+            string c = m2.suffix().str();
+            string o = m2.prefix().str();
+            l.setComment(c);
+            l.setOperand(o);
+        } else {
+            l.setOperand(line);
+        }
+    }
+    l.executer();
+    l.write();
 }
 
 void Parser::parseLine(std::string line)
@@ -160,7 +123,16 @@ void Parser::parseLine(std::string line)
     {
         l.setComment(line);
         l.setCommentLine(true);
+        l.write();
         return;
+    }
+    std::smatch m1;
+    std::regex e1("\\s+\\.", ECMAScript | icase);
+    if(std::regex_search(line,m1,e1))
+    {
+        string c = m1.suffix().str();
+        line = m1.prefix().str();
+        l.setComment(c);
     }
     int i = 0;
     string word;
@@ -172,43 +144,101 @@ void Parser::parseLine(std::string line)
         if (x != 0)
         {
             word = line.substr(0,x);
-            i = classify(word, i);
+            switch (i)
+            {
+            case 0:
+                if(noOperand(word))
+                {
+                    l.setOpCode(word);
+                    i = 2;
+                }
+                else if (opCode(word))
+                {
+                    l.setOpCode(word);
+                    i = 1;
+                }
+                else
+                {
+                    l.setLabel(word);
+                }
+                break;
+            case 1:
+                if(noOperand(word))
+                {
+                    l.setOpCode(word);
+                    i = 2;
+                }
+                else if (opCode(word))
+                {
+                    l.setOpCode(word);
+                }
+                else
+                {
+                    l.setErrorMessage("Undefined opCode ..");
+                    l.setErrorFound(true);
+                    l.write();
+                    return;
+                }
+                break;
+            case 2:
+                l.setOperand(word);
+                break;
+            }
+            i++;
+            if (i == 3)
+            {
+                l.executer();
+                l.write();
+                return;
+            }
         }
         line = m.suffix().str();
-        int len = line.length();
-        if (i == 3)
-        {
-            if (len != 0)
-            {
-                cout << "comment " << line << "\n";
-                l.setComment(line);
-            }
-            break;
-        }
-        if (i == -1)
-        {
-            return;
-        }
     }
     if (i < 3)
     {
-        classify(line,i);
+        switch (i)
+        {
+        case 0:
+            if(noOperand(line) || opCode(line))
+            {
+                l.setOpCode(line);
+            }
+            else
+            {
+                l.setErrorFound(true);
+                l.setErrorMessage("\tNo Operation Code ..");
+                l.write();
+                return;
+            }
+            break;
+        case 1:
+            if(noOperand(line) || opCode(line))
+            {
+                l.setOpCode(line);
+            }
+            else
+            {
+                l.setErrorMessage("\tUndefined operation code ..");
+                l.setErrorFound(true);
+                l.write();
+                return;
+            }
+            break;
+        case 2:
+            l.setOperand(line);
+        }
     }
-    //operand not string
-    //  address = updateCounter(opcode, operand);
-    //addlabel(l.getLabel(), l.getLocationCounter());
-   /* if (l.symbolicOperand()) {
-        addSymbolicOperand(l.getOperand(), l.getLocationCounter());
-    }
-
-    //write(address, label, opCode, operand, comment);
-    /*if (error)
-    write(error);*/
+    l.executer();
+    l.write();
 }
 
 bool Parser::opCode(std::string s)
 {
     std::transform(s.begin(), s.end(), s.begin(), ::tolower);
+    if (s.at(0) == '+') {
+        s = s.substr (1,s.length());
+        cout<< s;
+    }
     OperationCodes operationCodes;
     map<string, string> codeMap = operationCodes.getMap();
     map<string,string>::iterator it = codeMap.find(s);
@@ -216,69 +246,30 @@ bool Parser::opCode(std::string s)
     {
         return true;
     }
-
+    std::transform(s.begin(), s.end(), s.begin(), ::toupper);
+    for (int i = 0; i < 5; i++)
+    {
+        if (s == operationCodes.assemblerDirectives[i])
+        {
+            return true;
+        }
+    }
+    for (int i = 0; i < 4; i++)
+    {
+        if (s == operationCodes.storageDirectives[i])
+        {
+            return true;
+        }
+    }
     return false;
 }
 
 bool Parser::noOperand(std::string s)
 {
     std::transform(s.begin(), s.end(), s.begin(), ::toupper);
-    for (int i = 0; i < 20; i++)
+    if (s == "NOBASE" || s=="LTORG")
     {
-        //if (s == noOperandCodes[i])
-        //{
-            return true;
-        //}
+        return true;
     }
     return false;
-}
-
-int Parser::classify(std::string word, int i)
-{
-    switch (i)
-    {
-    case 0:
-        if(opCode(word))
-        {
-            i = 1;
-            cout << "opCode " << word << "\n";
-            l.setOpCode(word);
-        }
-        else if (noOperand(word))
-        {
-            i = 2;
-            cout << "opCode " << word << "\n";
-            l.setOpCode(word);
-        }
-        else
-        {
-            cout << "label " << word << "\n";
-            l.setLabel(word);
-        }
-        break;
-    case 1:
-        if(opCode(word))
-        {
-            cout << "opCode " << word << "\n";
-            l.setOpCode(word);
-        }
-        else if (noOperand(word))
-        {
-            cout << "opCode " << word << "\n";
-            l.setOpCode(word);
-            i = 2;
-        }
-        else
-        {
-            l.setErrorMessage("Undefined opCode ..");
-            return -1;
-        }
-        break;
-    case 2:
-        cout << "operand " << word << "\n";
-        l.setOperand(word);
-        break;
-    }
-    i++;
-    return i;
 }

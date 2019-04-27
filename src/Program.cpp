@@ -5,9 +5,13 @@
 #include"Parser.h"
 #include<regex>
 #include"Address.h"
+#include "Output.h"
+#include"LiteralTable.h"
 
 using namespace std;
 using namespace std::regex_constants;
+
+Program *Program::instance=0;
 
 Program::Program()
 {
@@ -19,26 +23,30 @@ Program::~Program()
     //dtor
 }
 
-/*static Program::Program *getInstance()
+Program *Program::getInstance()
 {
-    if (!this->instance)
+    if (instance==0)
     {
         instance = new Program();
     }
-    return this->instance;
+    return instance;
 }
-*/
+
 void Program::pass1()
 {
     bool endFlag;
     string path;
-    cout << "Enter Source File Path:\n";
-    cin >> path;
+    cout << "Enter \"pass1 \" then source File Path:\n";
+    string x;
+    cin >> x >> path;
+    cout << path;
     ifstream input;
+    //invalid
     input.open(path);
     string line;
     getline(input, line);
-    while (line.at(0) == '.') {
+    while (line.at(0) == '.')
+    {
         Line l;
         l.setCommentLine(true);
         l.setComment(line);
@@ -49,51 +57,82 @@ void Program::pass1()
     std::regex e("start", ECMAScript | icase);
     if(std::regex_search(line,m,e))
     {
-       Parser p;
-       p.parseStart(line);
-    } else {
-        Address address("start","0000");
-        address.startCounter();
-        Parser p;
-        p.parseLine(line);
+        Parser parser;
+        if (!parser.parseStart(line))
+        {
+            Parser p;
+            Program::address.startCounter("0000");
+            setstartingAdddress("0000");
+            p.parseLine(line);
+        }
+    }
+    else
+    {
+        Parser parser;
+        Program::address.startCounter("0000");
+        setstartingAdddress("0000");
+        parser.parseLine(line);
     }
     while (getline(input, line))
     {
         std::smatch m;
-        std::regex e("\tend", ECMAScript | icase);
+        std::regex e("(\\w+)?\\s+end", ECMAScript | icase);
         if(std::regex_search(line,m,e))
         {
-            if (m.position() == 0) {
-                Parser p;
-                p.parseEnd(line);
-                //symtTabError();
+            if (m.position() == 0)
+            {
+                Parser parser;
+                parser.parseEnd(line);
                 endFlag=true;
-                while (getline(input, line)) {
-                    //write
+                while (getline(input, line))
+                {
+                    Program::output.writeLine(line);
                 }
-            } else {
-                Parser p;
-            p.parseLine(line);
             }
-        } else {
-            Parser p;
-            p.parseLine(line);
+            else
+            {
+                Parser parser;
+                parser.parseLine(line);
+            }
+        }
+        else
+        {
+            Parser parser;
+            parser.parseLine(line);
         }
     }
-    if (!endFlag) {
-        //no end ... error*/
+    if (!endFlag)
+    {
+        Program::output.writeLine("Error! No End ..");
     }
+    input.close();
+    SymbolTable* symbolTable = SymbolTable::getInstance();
+    output.printSymbolt(symbolTable->GetSymTab());
 }
 
 void Program::setName(string name) {}
 void Program::setstartingAdddress(string startingAdddress) {}
 void Program::setLength(string Length) {}
-string Program::getName() {
+string Program::getName()
+{
     return this->name;
 }
-string Program::getStartingAddress() {
+string Program::getStartingAddress()
+{
     return this->startingAdddress;
 }
-string Program::getLength() {
+string Program::getLength()
+{
     return this->length;
+}
+Address Program::getAddressManager() {
+    return this->address;
+}
+Output Program::getOutputManager()
+{
+    return this->output;
+}
+LiteralTable Program::getLiteralTableManeger()
+{
+    return this->literalTable;
 }

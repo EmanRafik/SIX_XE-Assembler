@@ -7,11 +7,11 @@ using namespace std;
 class Address
 {
     public:
-        Address(std::string opCode, std::string operand);
+        Address();
         virtual ~Address();
         std::string getAddress();
-        void updateCounter();
-        void startCounter();
+        void updateCounter(std::string opCode, std::string operand);
+        void startCounter(std::string operand);
 
     protected:
 
