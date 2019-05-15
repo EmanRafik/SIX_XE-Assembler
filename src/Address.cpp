@@ -25,9 +25,9 @@ Address::~Address()
 string Address::getAddress()
 {
     string out = address;
-    if(this->address.length() < 4)
+    if(this->address.length() < 6)
     {
-        for(unsigned int i = 0; i < (4 - this->address.length()); i++)
+        for(unsigned int i = 0; i < (6 - this->address.length()); i++)
         {
             out = "0" + out;
         }
@@ -81,10 +81,14 @@ void Address::updateCounter(string opCode, string operand)
     {
         counAdd = counAdd + 2;
     }
+    else if (opCode.compare("clear") == 0)
+    {
+        counAdd = counAdd + 2;
+    }
 
     else if ((opCode.find("add") != std::string::npos|opCode.find("sub") != std::string::npos|
               opCode.find("mul") != std::string::npos|opCode.find("add") != std::string::npos) &&
-             opCode.length() == 4)
+             opCode.length() == 4 && (opCode.compare("rsub") != 0))
     {
         counAdd = counAdd + 2;
     }
@@ -98,12 +102,12 @@ void Address::updateCounter(string opCode, string operand)
     {
         counAdd = counAdd + 2;
     }
-    else if(opCode.compare("equ") != 0)
+    else if(opCode.compare("equ") != 0 && opCode.compare("end") != 0)
     {
         counAdd = counAdd + 3;
     }
     std::stringstream ss;
     ss << std::hex << counAdd;
     address = ss.str();
-    std::cout << counAdd << " ==> " << address << std::endl;
+    //std::cout << counAdd << " ==> " << address << std::endl;
 }

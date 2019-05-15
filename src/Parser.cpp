@@ -237,7 +237,6 @@ bool Parser::opCode(std::string s)
     std::transform(s.begin(), s.end(), s.begin(), ::tolower);
     if (s.at(0) == '+') {
         s = s.substr (1,s.length());
-        cout<< s;
     }
     OperationCodes operationCodes;
     map<string, string> codeMap = operationCodes.getMap();

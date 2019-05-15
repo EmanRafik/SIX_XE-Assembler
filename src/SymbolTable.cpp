@@ -224,8 +224,8 @@ string SymbolTable::evaluateExpression(string symbol, pair<string, string> first
 string SymbolTable::add(string first, string second)
 {
     std::stringstream str;
-    unsigned int f = std::stoul(first, nullptr, 16);
-    unsigned int s = std::stoul(second, nullptr, 16);
+    int f = std::stoul(first, nullptr, 16);
+    int s = std::stoul(second, nullptr, 16);
     std::stringstream ss;
     f = f+s;
     ss << std::hex << f;
@@ -234,8 +234,8 @@ string SymbolTable::add(string first, string second)
 string SymbolTable::subtract(string first, string second)
 {
     std::stringstream str;
-    unsigned int f = std::stoul(first, nullptr, 16);
-    unsigned int s = std::stoul(second, nullptr, 16);
+    int f = std::stoul(first, nullptr, 16);
+    int s = std::stoul(second, nullptr, 16);
     std::stringstream ss;
     f = f-s;
     ss << std::hex << f;
@@ -250,4 +250,14 @@ string SymbolTable::getOrgAddress(string symbol)
         return i->second[0]; //return symbol address
     }
     return"";
+}
+string SymbolTable::getAddress(string label)
+{
+    std::transform(label.begin(), label.end(), label.begin(), ::tolower);
+    map<string, string*>::iterator i = symTab.find(label);
+    if(i != symTab.end())
+    {
+        return i->second[0];
+    }
+    return "";
 }

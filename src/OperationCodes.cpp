@@ -15,7 +15,10 @@ string OperationCodes::storageDirectives[]= {"RESW","RESB","WORD","BYTE"};
 OperationCodes::OperationCodes()
 {
     //ctor
+    this->myMap["and"] = "3";
+    this->myMap["or"] = "3";
     this->myMap["rmo"] = "2";
+    this->myMap["clear"] = "1";
     this->myMap["lda"] = "3";
     this->myMap["ldx"] = "3";
     this->myMap["lds"] = "3";
@@ -81,7 +84,7 @@ bool OperationCodes::check(std::string opcode, std::string operand)
     cout<< opcode;
     if (opcode.at(0) == '+') {
         opcode = opcode.substr (1,opcode.length());
-        cout<< opcode;
+        //cout<< opcode;
     }
     string format = OperationCodes::getMap()[opcode];
     if (format.compare("2") == 0)
@@ -101,6 +104,10 @@ bool OperationCodes::check(std::string opcode, std::string operand)
             return true;
         }
         return false;
+    }
+    else if (format.compare("") == 0)
+    {
+        return true;
     }
     else
     {

@@ -17,6 +17,7 @@ class SymbolTable
         string addequ(std::string symbol, vector<std::string> operand);
         string getOrgAddress(std::string symbol);
         map<std::string, std::string*> GetSymTab();
+        string getAddress(string label);
     protected:
 
     private:

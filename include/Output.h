@@ -13,6 +13,7 @@ public:
     void makeLine(Line l);
     void printSymbolt(std::map<string, string*> table);
     void writeLine(std::string line);
+    void pass2(std::string line);
 protected:
 
 private:

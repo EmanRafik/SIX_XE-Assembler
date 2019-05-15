@@ -2,6 +2,9 @@
 #include<fstream>
 #include<iostream>
 #include<map>
+#include<ReportError.h>
+
+using namespace std;
 
 Output::Output()
 {
@@ -105,7 +108,7 @@ void Output::printSymbolt(std::map<string, string*> table) {
 		while (line.size() < expsize) {
 			line = line + " ";
 		}
-		std::cout << line;
+		//std::cout << line;
 		myfile << line;
 		myfile << "\n";
 	}
@@ -119,3 +122,11 @@ void Output::writeLine(std::string line)
     myfile << "\n";
     myfile.close();
 }
+void Output::pass2(std::string line)
+{
+    ofstream o;
+    o.open("Pass2.txt",std::ios::app);
+    o << line << "\n";
+    o.close();
+}
+

@@ -274,3 +274,154 @@
 	<utility>
 	<algorithm>
 
+1557876241 source:f:\github\six_xe-assembler\src\address.cpp
+	<iostream>
+	<sstream>
+	<algorithm>
+	<string>
+	"Address.h"
+
+1556107863 f:\github\six_xe-assembler\include\address.h
+	<string>
+
+1557944993 source:f:\github\six_xe-assembler\src\formatchecker.cpp
+	"FormatChecker.h"
+	<regex>
+	<vector>
+	<iostream>
+	<algorithm>
+	<string>
+
+1556135339 f:\github\six_xe-assembler\include\formatchecker.h
+	<string>
+	<regex>
+
+1557943590 source:f:\github\six_xe-assembler\src\line.cpp
+	"Line.h"
+	"Parser.h"
+	"Address.h"
+	"SymbolTable.h"
+	"Output.h"
+	"FormatChecker.h"
+	"LiteralTable.h"
+	"OperationCodes.h"
+	<string>
+	<vector>
+	<regex>
+	<ReportError.h>
+
+1556157477 f:\github\six_xe-assembler\include\line.h
+	<string>
+
+1556153207 f:\github\six_xe-assembler\include\parser.h
+	<string>
+	"Program.h"
+	"Address.h"
+	"Output.h"
+	"SymbolTable.h"
+	"Line.h"
+
+1557792288 f:\github\six_xe-assembler\include\program.h
+	<string>
+	<Address.h>
+	<Output.h>
+	<SymbolTable.h>
+	<Parser.h>
+	"LiteralTable.h"
+
+1557187308 f:\github\six_xe-assembler\include\output.h
+	<string>
+	<Line.h>
+	<map>
+
+1557251457 f:\github\six_xe-assembler\include\symboltable.h
+	<iostream>
+	<map>
+	<string>
+	<vector>
+	<sstream>
+	<utility>
+
+1557873651 f:\github\six_xe-assembler\include\literaltable.h
+	<string>
+	<map>
+	<iostream>
+
+1556155075 f:\github\six_xe-assembler\include\operationcodes.h
+	<map>
+	<string>
+	<iostream>
+
+1557522249 f:\github\six_xe-assembler\include\reporterror.h
+	<vector>
+	<string>
+
+1557946055 source:f:\github\six_xe-assembler\src\literaltable.cpp
+	"LiteralTable.h"
+	<string>
+	<map>
+	<iostream>
+	<sstream>
+	<cstdlib>
+	"Program.h"
+	"Address.h"
+
+1557588188 source:f:\github\six_xe-assembler\src\operationcodes.cpp
+	<iostream>
+	<map>
+	<string>
+	"OperationCodes.h"
+	<regex>
+	"FormatChecker.h"
+
+1557943694 source:f:\github\six_xe-assembler\src\output.cpp
+	"Output.h"
+	<fstream>
+	<iostream>
+	<map>
+	<ReportError.h>
+
+1557587672 source:f:\github\six_xe-assembler\src\parser.cpp
+	"Parser.h"
+	"Line.h"
+	<regex>
+	<string>
+	<iostream>
+	"Address.h"
+	"OperationCodes.h"
+	"Output.h"
+	"Program.h"
+	"SymbolTable.h"
+
+1557913583 source:f:\github\six_xe-assembler\src\program.cpp
+	"Program.h"
+	<iostream>
+	<fstream>
+	"Line.h"
+	"Parser.h"
+	<regex>
+	"Address.h"
+	"Output.h"
+	"LiteralTable.h"
+	"Parser_phase2.h"
+	"ObjectFile.h"
+	"ReportError.h"
+
+1557187801 f:\github\six_xe-assembler\include\parser_phase2.h
+	"string"
+
+1557793374 f:\github\six_xe-assembler\include\objectfile.h
+	<string>
+	<vector>
+
+1557251537 source:f:\github\six_xe-assembler\src\symboltable.cpp
+	"SymbolTable.h"
+	<iostream>
+	<string>
+	<map>
+	<cctype>
+	<sstream>
+	<vector>
+	<utility>
+	<algorithm>
+

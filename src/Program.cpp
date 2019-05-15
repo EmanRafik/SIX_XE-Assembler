@@ -7,6 +7,9 @@
 #include"Address.h"
 #include "Output.h"
 #include"LiteralTable.h"
+#include"Parser_phase2.h"
+#include"ObjectFile.h"
+#include"ReportError.h"
 
 using namespace std;
 using namespace std::regex_constants;
@@ -16,6 +19,8 @@ Program *Program::instance=0;
 Program::Program()
 {
     //ctor
+    baseRelative = true;
+    baseRegister = "FFFFFF";
 }
 
 Program::~Program()
@@ -32,17 +37,17 @@ Program *Program::getInstance()
     return instance;
 }
 
-void Program::pass1()
+void Program::pass1(string path)
 {
     bool endFlag;
-    string path;
+    /*string path;
     cout << "Enter \"pass1 \" then source File Path:\n";
     string x;
-    cin >> x >> path;
-    cout << path;
+    cin >> x >> path;*/
+    //cout << path;
     ifstream input;
-    //invalid
     input.open(path);
+
     string line;
     getline(input, line);
     while (line.at(0) == '.')
@@ -110,9 +115,48 @@ void Program::pass1()
     output.printSymbolt(symbolTable->GetSymTab());
 }
 
-void Program::setName(string name) {}
-void Program::setstartingAdddress(string startingAdddress) {}
-void Program::setLength(string Length) {}
+void Program::assemble()
+{
+    if (this->pass1_error)
+    {
+        ofstream o;
+        o.open("Pass2.txt");
+        o.close();
+        ReportError* reportError = ReportError::getInstance();
+        reportError->printReport();
+        return;
+    }
+    ObjectFile* objectFile = ObjectFile::getInstance();
+    objectFile->Header();
+    ofstream o;
+    o.open("Pass2.txt");
+    o.close();
+    Parser_phase2 p;
+    p.parse();
+    ReportError* reportError = ReportError::getInstance();
+    reportError->printReport();
+}
+
+void Program::setName(string name)
+{
+    this->name = name;
+}
+void Program::setstartingAdddress(string startingAdddress)
+{
+    this->startingAdddress = startingAdddress;
+}
+void Program::setLength(string length)
+{
+    this->length = length;
+}
+void Program::setBaseRegister(string address)
+{
+    this->baseRegister = address;
+}
+void Program::setBaseRelative(bool baseRelative)
+{
+    this->baseRelative = baseRelative;
+}
 string Program::getName()
 {
     return this->name;
@@ -125,7 +169,16 @@ string Program::getLength()
 {
     return this->length;
 }
-Address Program::getAddressManager() {
+string Program::getBaseRegister()
+{
+    return this->baseRegister;
+}
+bool Program::isBaseRealative()
+{
+    return this->baseRelative;
+}
+Address Program::getAddressManager()
+{
     return this->address;
 }
 Output Program::getOutputManager()
@@ -135,4 +188,8 @@ Output Program::getOutputManager()
 LiteralTable Program::getLiteralTableManeger()
 {
     return this->literalTable;
+}
+void Program::setPass1_errorFlag(bool flag)
+{
+    this->pass1_error = flag;
 }

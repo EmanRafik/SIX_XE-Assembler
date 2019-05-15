@@ -9,15 +9,17 @@ class LiteralTable
 {
     public:
         LiteralTable();
-        virtual ~LiteralTable();
+        static LiteralTable *getInstance();
+        //virtual ~LiteralTable();
         void addLiteral(std::string literal);
         std::string setLiterals(std::string address);
         std::string getLiterals();
         std::string literals;
-
+        std::map <std::string ,std::string*> getlitTbl();
     protected:
 
     private:
+        static LiteralTable *instance;
         std::map <std::string ,std::string*> litTbl;
         std::string ASCIItoHEX(std::string ascii);
 };

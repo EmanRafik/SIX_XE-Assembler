@@ -8,8 +8,11 @@
 #include"OperationCodes.h"
 #include<string>
 #include<vector>
+#include<regex>
+#include<ReportError.h>
 
 using namespace std;
+using namespace regex_constants;
 
 Program* program= Program::getInstance();
 Address address = program->getAddressManager();
@@ -129,14 +132,14 @@ void Line::checker()
     map<string,string>::iterator it = codeMap.find(getOperand());
     if(it != codeMap.end())
     {
-        setErrorMessage(getErrorMessage() + "\t\\\t" + "Invalid Operand ..");
+        setErrorMessage(getErrorMessage() + "\t" + "Invalid Operand ..");
         return;
     }
     for (int i = 0; i < 7; i++)
     {
         if (getOperand() == oc.assemblerDirectives[i])
         {
-            setErrorMessage(getErrorMessage() + "\t\\\t" + "Invalid Operand ..");
+            setErrorMessage(getErrorMessage() + "\t" + "Invalid Operand ..");
             return;
         }
     }
@@ -144,14 +147,14 @@ void Line::checker()
     {
         if (getOperand() == oc.storageDirectives[i])
         {
-            setErrorMessage(getErrorMessage() + "\t\\\t" + "Invalid Operand ..");
+            setErrorMessage(getErrorMessage() + "\t" + "Invalid Operand ..");
             return;
         }
     }
     if (!oc.check(getOpCode(), getOperand()))
     {
         setErrorFound(true);
-        setErrorMessage(getErrorMessage() + "\t\\\t" + "Invalid Operand ..");
+        setErrorMessage(getErrorMessage() + "\t" + "Invalid Operand ..");
     }
 }
 void Line::executer()
@@ -179,16 +182,20 @@ void Line::addToSymbolTable()
         if (z > 0)
         {
             setErrorFound(true);
-            setErrorMessage(getErrorMessage() + "\t\\\t" + e);
+            setErrorMessage(getErrorMessage() + "\t" + e);
         }
     }
 }
 void Line::addToLiteralTable()
 {
-    if (getOperand().at(0) == '=')
+    if(getOperand().length() > 0)
     {
-        literalTable.addLiteral(operand);
+        if (getOperand().at(0) == '=')
+        {
+            literalTable.addLiteral(operand);
+        }
     }
+
 }
 void Line::updateLocationCounter()
 {
@@ -216,11 +223,54 @@ void Line::handleSpecialCases()
     }
     if (s == "END")
     {
+        bool flag = false;
         updateLocationCounter();
-        string newAddress = literalTable.setLiterals(address.getAddress());
-        output.writeLine(literalTable.getLiterals());
-        address.startCounter(newAddress);
-        //calculate length
+        std::smatch m;
+        std::regex e("[A-F0-9]+", ECMAScript | icase);
+        if (std::regex_search(operand,m,e))
+        {
+            int x = m.length();
+            int y = operand.length();
+            if (x==y)
+            {
+                flag = true;
+            }
+        }
+        SymbolTable* symb = SymbolTable::getInstance();
+        string add = symb->getAddress(operand);
+        if (add.length() > 0)
+        {
+            flag = true;
+        }
+        if (!flag)
+        {
+            setErrorFound(true);
+            setErrorMessage(getErrorMessage() + "\t" + "Invalid Operand ..");
+            output.makeLine(*this);
+            string newAddress = literalTable.setLiterals(address.getAddress());
+            output.writeLine(literalTable.getLiterals());
+            address.startCounter(newAddress);
+        }
+        else
+        {
+            output.makeLine(*this);
+            string newAddress = literalTable.setLiterals(address.getAddress());
+            output.writeLine(literalTable.getLiterals());
+            address.startCounter(newAddress);
+            string current = address.getAddress();
+            string start = program->getStartingAddress();
+            int bgn,finish,l;
+            stringstream ss1,ss2,ss3;
+            ss1 << std::hex << start;
+            ss1 >> bgn;
+            ss2 << std::hex << current;
+            ss2 >> finish;
+            l = finish - bgn;
+            ss3 << std::hex << l;
+            string len = ss3.str();
+            Program* program= Program::getInstance();
+            program->setLength(len);
+        }
         return;
     }
     if (s == "BASE")
@@ -229,7 +279,7 @@ void Line::handleSpecialCases()
         int len2 = getLabel().length();
         if (len1 == 0 || len2 > 0)
         {
-            setErrorMessage(getErrorMessage() + "\t\\\t" + "Undefined format for NOBASE ..");
+            setErrorMessage(getErrorMessage() + "\t" + "Undefined format for NOBASE ..");
         }
         return;
     }
@@ -239,7 +289,7 @@ void Line::handleSpecialCases()
         int len2 = getLabel().length();
         if (len1 > 0 || len2 > 0)
         {
-            setErrorMessage(getErrorMessage() + "\t\\\t" + "Undefined format for NOBASE ..");
+            setErrorMessage(getErrorMessage() + "\t" + "Undefined format for NOBASE ..");
         }
         return;
     }
@@ -249,7 +299,7 @@ void Line::handleSpecialCases()
         int len2 = getLabel().length();
         if (len1 > 0 || len2 > 0)
         {
-            setErrorMessage(getErrorMessage() + "\t\\\t" + "Undefined format for LTORG ..");
+            setErrorMessage(getErrorMessage() + "\t" + "Undefined format for LTORG ..");
             return;
         }
         string newAddress = literalTable.setLiterals(address.getAddress());
@@ -265,7 +315,7 @@ void Line::handleSpecialCases()
         if (len > 0)
         {
             setErrorFound(true);
-            setErrorMessage(getErrorMessage() + "\t\\\t" + "ORG directive can not have label field ..");
+            setErrorMessage(getErrorMessage() + "\t" + "ORG directive can not have label field ..");
         }
         else
         {
@@ -273,7 +323,7 @@ void Line::handleSpecialCases()
             string a = symbolTable->getOrgAddress(getOperand());
             if (a == "")
             {
-                setErrorMessage(getErrorMessage() + "\t\\\t" + "Undefined Operand ..");
+                setErrorMessage(getErrorMessage() + "\t" + "Undefined Operand ..");
                 return;
             }
             address.startCounter(a);
@@ -313,30 +363,37 @@ void Line::handleSpecialCases()
             }
             if (exp.size() == 0)
             {
-                setErrorMessage(getErrorMessage() + "\t\\\t" + "Undefined Operand ..");
+                setErrorMessage(getErrorMessage() + "\t" + "Undefined Operand ..");
                 return;
             }
             SymbolTable* symbolTable = SymbolTable::getInstance();
             string s = symbolTable->addequ(getLabel(),exp);
             if (s == "")
             {
-                setErrorMessage(getErrorMessage() + "\t\\\t" + s);
+                setErrorMessage(getErrorMessage() + "\t" + s);
             }
             return;
         }
         else
         {
             setErrorFound(true);
-            setErrorMessage(getErrorMessage() + "\t\\\t" + "Invalid EQU with no label ..");
+            setErrorMessage(getErrorMessage() + "\t" + "Invalid EQU with no label ..");
         }
         return;
     }
 }
 void Line::write()
 {
+    if (this->errorFound())
+    {
+        ReportError* reportError = ReportError::getInstance();
+        string errorLine = this->getInput() + "\n" + this->getErrorMessage();
+        reportError->addError(errorLine);
+        program->setPass1_errorFlag(true);
+    }
     string s = getOpCode();
     std::transform(s.begin(), s.end(), s.begin(), ::toupper);
-    if (s == "LTORG")
+    if (s == "LTORG" || s == "END")
     {
         return;
     }

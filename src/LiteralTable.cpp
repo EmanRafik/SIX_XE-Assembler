@@ -7,14 +7,23 @@
 #include"Program.h"
 #include"Address.h"
 
+LiteralTable *LiteralTable::instance=0;
 LiteralTable::LiteralTable()
 {
     //ctor
 }
 
-LiteralTable::~LiteralTable()
+/*LiteralTable::~LiteralTable()
 {
     //dtor
+}*/
+LiteralTable *LiteralTable::getInstance()
+{
+    if (instance==0)
+    {
+        instance = new LiteralTable();
+    }
+    return instance;
 }
 
 void LiteralTable::addLiteral(std::string literal)
@@ -45,10 +54,10 @@ void LiteralTable::addLiteral(std::string literal)
    // str >> std::hex >> hexValue;
  //   cout << hexValue << "\n";
     std::map<string, std::string*>::iterator i = this->litTbl.find(hexValue);
-    if(i == litTbl.end()) //label not found
+    if(i == this->litTbl.end()) //label not found
     {
         std::string* s = new std::string[3] {literal,length," "};
-        litTbl[hexValue] = s;
+        this->litTbl[hexValue] = s;
     }
 
 }
@@ -56,7 +65,7 @@ std::string LiteralTable::setLiterals(std::string address)
 {
     //cout << address << " ";
     literals = "";
-    for (std::map< string, string*>::iterator it = litTbl.begin(); it != litTbl.end();
+    for (std::map< string, string*>::iterator it = this->litTbl.begin(); it != this->litTbl.end();
             ++it)
     {
         if (it->second[2] == " ")
@@ -85,7 +94,7 @@ std::string LiteralTable::setLiterals(std::string address)
                     }
                 }
                 address = out;
-            literals = literals  +it->second[2]+"       *         " + it->second[0]+"\n" ;
+            literals = literals  +it->second[2]+"               *       " + it->second[0]+"\n" ;
         }
     }
     return address;
@@ -110,3 +119,8 @@ std::string LiteralTable::getLiterals()
         }
         return hex;
     }
+
+std::map <std::string ,std::string*> LiteralTable::getlitTbl(){
+    return this->litTbl;
+}
+

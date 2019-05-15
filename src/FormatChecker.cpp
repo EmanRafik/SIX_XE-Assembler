@@ -31,12 +31,16 @@ bool FormatChecker::formatTwo(std::string operand)
 }
 bool FormatChecker::formatThree(std::string operand)
 {
+
+    if (isExpression(operand)) {
+        return true;
+    }
     if (operand == "*")
     {
         return true;
     }
     std::smatch m;
-    std::regex e("((=)?(C'(\\w|\\W)+')|(X'[A-F0-9]'))|((=)?W'(-)\\d+')", ECMAScript | icase);
+    std::regex e("((=)?(C'(\\w|\\W)+'))|((=)?(X'[A-F0-9]+'))|((=)?W'(-)?\\d+')", ECMAScript | icase);
     if (std::regex_search(operand,m,e))
     {
         int x = m.length();
@@ -93,8 +97,9 @@ bool FormatChecker::formatThree(std::string operand)
             {
                 return false;
             }
+            return true;
         }
-        return true;
+
     }
     return false;
 }
@@ -102,7 +107,7 @@ bool FormatChecker::formatThree(std::string operand)
 bool FormatChecker::validLabel(std::string label)
 {
     std::smatch m;
-    std::regex e("(([a-z]|[A-Z])\\w+", ECMAScript | icase);
+    std::regex e("([a-z]|[A-Z])\\w+", ECMAScript | icase);
     if (std::regex_search(label,m,e))
     {
         int x = m.length();
@@ -125,15 +130,11 @@ vector<string> FormatChecker::expression(std::string operand)
         {
             string n3;
             std::smatch m;
-            std::regex all("[/+-]|\\(|\\)", ECMAScript | icase);
+            std::regex all("[/+-]|[*]|\\(|\\)", ECMAScript | icase);
             if (std::regex_search(operand,m,all))
             {
                 out.push_back(m.prefix().str());
-                // cout << m.prefix().str();
-                //cout << "\n";
                 out.push_back(m.str());
-                //cout << m.str();
-                // cout << "\n";
                 n3 = m.suffix().str();
             }
             if(n3.find('+') != std::string::npos
@@ -147,7 +148,6 @@ vector<string> FormatChecker::expression(std::string operand)
             }
             else
             {
-                //cout << n3;
                 out.push_back(n3);
                 con = false;
             }
@@ -166,23 +166,21 @@ bool FormatChecker::isExpression(std::string operand)
     std::regex add("[+]", ECMAScript | icase);
     std::regex sub("[-]", ECMAScript | icase);
     std::regex div("[/]", ECMAScript | icase);
-    std::regex all("[/+-]", ECMAScript | icase);
+    std::regex all("[/+-]|[*]", ECMAScript | icase);
+    std::regex mul("[*]", ECMAScript | icase);
 
     if (operand.at(0)=='+' ||
             operand.at(0)=='-' ||
             operand.at(0)=='/')
     {
-        //cout << "false1";
         return false;
     }
     if (operand.at(0)=='*' && operand.length() == 1)
     {
-        // cout << "false2";
         return false;
     }
     else if (operand.at(0)=='*' && operand.at(1) != '(')
     {
-        //cout << "false22";
         return false;
     }
     if (std::regex_search(operand,m,add))
@@ -191,7 +189,6 @@ bool FormatChecker::isExpression(std::string operand)
         string after = m.prefix().str();
         if(before.empty() || after.empty())
         {
-            //cout << "false3";
             return false;
         }
     }
@@ -201,7 +198,6 @@ bool FormatChecker::isExpression(std::string operand)
         string after = m.prefix().str();
         if(before.empty() || after.empty())
         {
-            //cout << "false4";
             return false;
         }
     }
@@ -211,7 +207,15 @@ bool FormatChecker::isExpression(std::string operand)
         string after = m.prefix().str();
         if(before.empty() || after.empty())
         {
-            //cout << "false5";
+            return false;
+        }
+    }
+    if (std::regex_search(operand,m,mul))
+    {
+        string before = m.suffix().str();
+        string after = m.prefix().str();
+        if(before.empty() || after.empty())
+        {
             return false;
         }
     }
@@ -221,16 +225,13 @@ bool FormatChecker::isExpression(std::string operand)
         string after = m.prefix().str();
         if(!before.empty() && !after.empty())
         {
-            //cout << "true";
             return true;
         }
     }
     else
     {
-        //cout << "falseend";
         return false;
     }
-
 }
 
 bool FormatChecker::noLabelCode(string opCode)

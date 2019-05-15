@@ -14,23 +14,30 @@ class Program
 public:
     static Program *getInstance();
     virtual ~Program();
-    void pass1();
+    void pass1(string path);
+    void assemble();
     void setName(string name);
     void setstartingAdddress(string startingAdddress);
-    void setLength(string Length);
+    void setLength(string length);
+    void setBaseRegister(string address);
+    void setBaseRelative(bool baseRelative);
     string getName();
     string getStartingAddress();
     string getLength();
+    string getBaseRegister();
+    bool isBaseRealative();
     Address getAddressManager();
     Output getOutputManager();
     LiteralTable getLiteralTableManeger();
+    void setPass1_errorFlag(bool flag);
 
 protected:
 
 private:
     Program();
     static Program *instance;
-    string name, startingAdddress, length;
+    string name, startingAdddress, length,baseRegister;
+    bool baseRelative, pass1_error;
     Address address;
     Output output;
     LiteralTable literalTable;
